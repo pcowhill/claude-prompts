@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prompt Gallery — Reusable AI Prompt Templates</title>
+<meta name="description" content="A polished, offline gallery of reusable prompt templates for ChatGPT, Claude, Claude Code, Codex, and similar AI tools." />
+
+<!-- Set the saved theme before first paint to avoid a flash of the wrong theme. -->
+<script>
+  try {
+    var saved = localStorage.getItem('pg-theme');
+    if (saved === 'light' || saved === 'dark') {
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+  } catch (e) { /* localStorage may be unavailable; default theme stays. */ }
+</script>
+
+<style>
+  /* ============================================================
+     THEME TOKENS
+     Dark is the default. Light overrides live in [data-theme="light"].
+     ============================================================ */
+  :root {
+    --bg: #0e1116;
+    --bg-elev: #161b22;
+    --bg-elev-2: #1b2230;
+    --border: #2a3342;
+    --border-soft: #222a36;
+    --text: #e7edf4;
+    --muted: #9aa7b4;
+    --accent: #2563eb;     /* buttons (white text, AA contrast) */
+    --accent-fg: #ffffff;
+    --accent-strong: #1d4ed8;
+    --accent-soft: #7aa2f7; /* focus rings, active text, highlights */
+    --seg-bg: rgba(122,162,247,0.13);
+    --seg-bg-hover: rgba(122,162,247,0.26);
+    --seg-border: rgba(122,162,247,0.55);
+    --ph-text: #f0b072;
+    --ph-bg: rgba(240,176,114,0.12);
+    --ph-border: rgba(240,176,114,0.55);
+    --chip-bg: #1d2531;
+    --chip-border: #2c3645;
+    --success: #1a7f37;
+    --success-fg: #ffffff;
+    --danger: #b3261e;
+    --danger-fg: #ffffff;
+    --tip-bg: #0b0f16;
+    --tip-text: #e7edf4;
+    --tip-border: #36415280;
+    --btn-bg: #1f2733;
+    --btn-hover: #283242;
+    --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    --shadow-soft: 0 2px 10px rgba(0,0,0,0.25);
+    --radius: 12px;
+    --header-h: 66px;
+    --maxw: 1280px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  [data-theme="light"] {
+    --bg: #f5f7fa;
+    --bg-elev: #ffffff;
+    --bg-elev-2: #f0f3f7;
+    --border: #d6dde5;
+    --border-soft: #e3e8ee;
+    --text: #1c2430;
+    --muted: #5a6573;
+    --accent: #2563eb;
+    --accent-fg: #ffffff;
+    --accent-strong: #1d4ed8;
+    --accent-soft: #2563eb;
+    --seg-bg: rgba(37,99,235,0.10);
+    --seg-bg-hover: rgba(37,99,235,0.20);
+    --seg-border: rgba(37,99,235,0.45);
+    --ph-text: #9a5b00;
+    --ph-bg: rgba(154,91,0,0.10);
+    --ph-border: rgba(154,91,0,0.45);
+    --chip-bg: #eef1f6;
+    --chip-border: #d9e0e8;
+    --success: #1a7f37;
+    --success-fg: #ffffff;
+    --danger: #c0271f;
+    --danger-fg: #ffffff;
+    --tip-bg: #1c2430;
+    --tip-text: #f3f6fa;
+    --tip-border: #00000033;
+    --btn-bg: #ffffff;
+    --btn-hover: #eef1f6;
+    --shadow: 0 12px 32px rgba(20,30,50,0.16);
+    --shadow-soft: 0 2px 10px rgba(20,30,50,0.08);
+  }
+
+  /* ============================================================
+     BASE
+     ============================================================ */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-soft); }
+  h1, h2, h3 { line-height: 1.25; margin: 0; }
+
+  .skip-link {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: var(--accent-fg);
+    padding: 10px 14px; border-radius: 0 0 8px 0; z-index: 2000;
+  }
+  .skip-link:focus { left: 0; }
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 12px clamp(14px, 3vw, 28px);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+  .brand .mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-soft) 100%);
+    display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px;
+    box-shadow: var(--shadow-soft);
+  }
+  .brand h1 { font-size: 1.15rem; letter-spacing: -0.01em; }
+  .brand .sub { font-size: 0.74rem; color: var(--muted); font-weight: 500; }
+
+  .search-wrap { position: relative; flex: 1 1 260px; min-width: 200px; }
+  .search-wrap .icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none; font-size: 0.95rem;
+  }
+  #search {
+    width: 100%; font: inherit; font-size: 0.95rem;
+    padding: 10px 14px 10px 36px;
+    color: var(--text); background: var(--bg-elev-2);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  #search::placeholder { color: var(--muted); }
+  #search:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 1px; border-color: var(--accent-soft); }
+
+  .theme-toggle {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+    font: inherit; font-size: 0.88rem; font-weight: 600;
+    padding: 9px 13px; border-radius: 10px; cursor: pointer;
+    background: var(--btn-bg); color: var(--text); border: 1px solid var(--border);
+  }
+  .theme-toggle:hover { background: var(--btn-hover); }
+  .theme-toggle .ico { font-size: 1rem; line-height: 1; }
+
+  /* ============================================================
+     INTRO
+     ============================================================ */
+  .shell { max-width: var(--maxw); margin: 0 auto; padding: 0 clamp(14px, 3vw, 28px); }
+
+  .intro { margin: 22px 0 6px; }
+  .intro > details {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-soft);
+    overflow: hidden;
+  }
+  .intro summary {
+    cursor: pointer; list-style: none; padding: 16px 20px;
+    font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 10px;
+  }
+  .intro summary::-webkit-details-marker { display: none; }
+  .intro summary .chev { margin-left: auto; color: var(--muted); transition: transform .2s; }
+  .intro details[open] summary .chev { transform: rotate(90deg); }
+  .intro .intro-body { padding: 0 20px 20px; color: var(--text); }
+  .intro .intro-body p { margin: 0 0 14px; color: var(--muted); max-width: 70ch; }
+  .intro ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; max-width: 80ch; }
+  .intro ol li { padding-left: 4px; }
+  .intro .kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82em; background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 6px;
+  }
+  .intro .tools { font-weight: 600; color: var(--text); }
+
+  /* ============================================================
+     LAYOUT
+     ============================================================ */
+  .layout {
+    display: grid; grid-template-columns: 232px 1fr;
+    gap: clamp(16px, 2.4vw, 30px); align-items: start;
+    padding: 18px 0 60px;
+  }
+  /* Let grid children shrink so overflow-x:auto (sidebar) and pre-wrap
+     (prompt bodies) stay inside the column instead of widening the page. */
+  .layout > * { min-width: 0; }
+
+  .sidebar { position: sticky; top: calc(var(--header-h) + 16px); }
+  .sidebar h2 {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--muted); margin: 0 0 10px; padding-left: 6px;
+  }
+  .cat-list { list-style: none; margin: 0 0 22px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .cat {
+    width: 100%; text-align: left; font: inherit; font-size: 0.92rem; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px; border-radius: 9px; cursor: pointer;
+    background: transparent; color: var(--text); border: 1px solid transparent;
+  }
+  .cat:hover { background: var(--bg-elev); }
+  .cat.active {
+    background: var(--bg-elev); border-color: var(--border);
+    color: var(--accent-soft); font-weight: 700;
+  }
+  .cat .count {
+    margin-left: auto; font-size: 0.74rem; font-weight: 600; color: var(--muted);
+    background: var(--chip-bg); border: 1px solid var(--chip-border);
+    border-radius: 20px; padding: 1px 8px; min-width: 24px; text-align: center;
+  }
+  .cat.active .count { color: var(--accent-soft); }
+
+  .side-note {
+    font-size: 0.78rem; color: var(--muted); padding: 0 6px; line-height: 1.5;
+    border-top: 1px solid var(--border-soft); padding-top: 14px;
+  }
+
+  /* ============================================================
+     CARDS GRID
+     ============================================================ */
+  .results-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .results-bar .count-label { color: var(--muted); font-size: 0.9rem; }
+  .clear-btn {
+    font: inherit; font-size: 0.82rem; color: var(--accent-soft);
+    background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 6px;
+  }
+  .clear-btn:hover { text-decoration: underline; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+    gap: clamp(16px, 2vw, 24px);
+    align-items: start;
+  }
+
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-soft);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .card[hidden] { display: none; }
+  .card-title { font-size: 1.16rem; letter-spacing: -0.01em; }
+  .card-desc { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+  .card-meta { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+  .chip {
+    font-size: 0.74rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    border: 1px solid var(--chip-border); background: var(--chip-bg); color: var(--text);
+    white-space: nowrap;
+  }
+  .cat-chip {
+    color: var(--accent-soft);
+    background: color-mix(in srgb, var(--accent-soft) 14%, transparent);
+    border-color: color-mix(in srgb, var(--accent-soft) 35%, transparent);
+  }
+  button.tag { cursor: pointer; font-family: inherit; }
+  button.tag:hover { border-color: var(--accent-soft); color: var(--accent-soft); }
+  button.tag::before { content: "#"; opacity: 0.55; margin-right: 1px; }
+  .chip:focus-visible, .cat:focus-visible {
+    outline: 2px solid var(--accent-soft); outline-offset: 2px;
+  }
+
+  /* ---- prompt body & highlighted segments ---- */
+  .prompt-body {
+    white-space: pre-wrap; overflow-wrap: break-word;
+    background: var(--bg-elev-2); border: 1px solid var(--border-soft);
+    border-radius: 10px; padding: 16px;
+    font-size: 0.93rem; line-height: 1.75; color: var(--text);
+  }
+  .seg {
+    border-radius: 4px; padding: 0.5px 2px; cursor: help;
+    background: var(--seg-bg);
+    border-bottom: 1px dashed var(--seg-border);
+    transition: background .12s ease;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
+  .seg:hover, .seg:focus-visible { background: var(--seg-bg-hover); }
+  .seg:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 1px; }
+  .seg.placeholder {
+    color: var(--ph-text); font-style: italic;
+    background: var(--ph-bg); border-bottom-color: var(--ph-border);
+  }
+
+  /* ---- actions / buttons ---- */
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    font: inherit; font-size: 0.88rem; font-weight: 600;
+    padding: 9px 15px; border-radius: 9px; cursor: pointer;
+    background: var(--btn-bg); color: var(--text); border: 1px solid var(--border);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn:hover { background: var(--btn-hover); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .btn.copied { background: var(--success); border-color: var(--success); color: var(--success-fg); }
+  .btn.copy-error { background: var(--danger); border-color: var(--danger); color: var(--danger-fg); }
+  .btn:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+
+  /* ---- editor ---- */
+  .editor-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .editor-wrap[hidden] { display: none; }
+  .editor {
+    width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.86rem; line-height: 1.6; resize: vertical; min-height: 160px;
+    padding: 12px 14px; border-radius: 10px;
+    background: var(--bg-elev-2); color: var(--text); border: 1px solid var(--border);
+  }
+  .editor:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 1px; border-color: var(--accent-soft); }
+  .editor-hint { font-size: 0.78rem; color: var(--muted); margin: -2px 0 0; }
+
+  /* ---- empty state ---- */
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--muted);
+    border: 1px dashed var(--border); border-radius: var(--radius); background: var(--bg-elev);
+  }
+  .empty strong { color: var(--text); display: block; font-size: 1.05rem; margin-bottom: 6px; }
+
+  /* ---- footer ---- */
+  footer {
+    border-top: 1px solid var(--border); padding: 22px 0 40px;
+    color: var(--muted); font-size: 0.82rem; text-align: center; line-height: 1.7;
+  }
+  footer .dot { opacity: 0.5; margin: 0 8px; }
+
+  /* ============================================================
+     TOOLTIP (single shared, floating, never inside copyable text)
+     ============================================================ */
+  .tooltip {
+    position: fixed; z-index: 1000; max-width: 340px;
+    background: var(--tip-bg); color: var(--tip-text);
+    border: 1px solid var(--tip-border); border-radius: 10px;
+    padding: 11px 13px; font-size: 0.85rem; line-height: 1.5;
+    box-shadow: var(--shadow);
+    opacity: 0; visibility: hidden; transform: translateY(3px);
+    transition: opacity .12s ease, transform .12s ease;
+    pointer-events: none; /* never blocks clicks/selection */
+  }
+  .tooltip.show { opacity: 1; visibility: visible; transform: none; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; top: auto; }
+    .sidebar h2 { padding-left: 2px; }
+    .cat-list {
+      flex-direction: row; overflow-x: auto; gap: 8px;
+      padding-bottom: 6px; margin-bottom: 16px;
+      scrollbar-width: thin;
+    }
+    .cat { width: auto; white-space: nowrap; flex: 0 0 auto; }
+    .cat .count { margin-left: 6px; }
+    .side-note { display: none; }
+  }
+  @media (max-width: 560px) {
+    .brand .sub { display: none; }
+    .topbar { gap: 10px; }
+    .card { padding: 16px; }
+    .actions .btn { flex: 1 1 auto; justify-content: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to prompts</a>
+
+<!-- HEADER ------------------------------------------------------ -->
+<header class="topbar">
+  <div class="brand">
+    <div class="mark" aria-hidden="true">&gt;_</div>
+    <div>
+      <h1>Prompt Gallery</h1>
+      <div class="sub">Reusable templates for AI tools</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <span class="icon" aria-hidden="true">&#128269;</span>
+    <input id="search" type="search" autocomplete="off"
+           placeholder="Search titles, tags, categories, prompt text…"
+           aria-label="Search prompts" />
+  </div>
+
+  <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+    <span class="ico" id="themeIco" aria-hidden="true">&#9728;</span>
+    <span id="themeLabel">Light mode</span>
+  </button>
+</header>
+
+<div class="shell">
+  <!-- INTRO --------------------------------------------------- -->
+  <section class="intro" aria-label="How to use this page">
+    <details open>
+      <summary>How to use this gallery <span class="chev" aria-hidden="true">&#9656;</span></summary>
+      <div class="intro-body">
+        <p>
+          A curated set of reusable prompt templates for technical work. Every prompt is broken
+          into highlighted parts so you can see <em>why each piece is there</em> before you use it.
+        </p>
+        <ol>
+          <li><strong>Choose a template</strong> from the categories on the left, or search above.</li>
+          <li><strong>Hover or keyboard-focus</strong> any <span class="seg" tabindex="-1" style="cursor:default">highlighted section</span> to read what it does, why it helps, and when to drop it. On a phone, just tap it.</li>
+          <li><strong>Edit if you like</strong> with <em>Edit before copying</em> — tweak wording or trim parts you don't need.</li>
+          <li><strong>Add your context</strong> by replacing the bracketed section at the end of each prompt.</li>
+          <li><strong>Copy and paste</strong> into <span class="tools">ChatGPT, Claude, Claude Code, Codex,</span> or any other AI tool.</li>
+        </ol>
+        <p style="margin-bottom:0">
+          Tip: press <span class="kbd">Tab</span> to move between sections and <span class="kbd">Esc</span> to dismiss a tooltip.
+          Copy buttons always copy clean plain text — never the tooltips or highlights.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- LAYOUT -------------------------------------------------- -->
+  <div class="layout">
+    <aside class="sidebar">
+      <nav aria-label="Prompt categories">
+        <h2>Categories</h2>
+        <ul class="cat-list" id="catList"><!-- built by JS --></ul>
+      </nav>
+      <p class="side-note">
+        Single file. No frameworks, no network. Works fully offline once loaded.
+      </p>
+    </aside>
+
+    <main id="main">
+      <div class="results-bar">
+        <span class="count-label" id="countLabel" aria-live="polite"></span>
+        <button class="clear-btn" id="clearBtn" type="button" hidden>Clear filters</button>
+      </div>
+      <div class="grid" id="grid"><!-- cards built by JS --></div>
+      <p class="empty" id="empty" hidden>
+        <strong>No prompts match your filters.</strong>
+        Try a different search term or category.
+      </p>
+    </main>
+  </div>
+
+  <footer>
+    A single-file prompt gallery.
+    <span class="dot">&bull;</span> No external dependencies
+    <span class="dot">&bull;</span> No tracking
+    <span class="dot">&bull;</span> Works offline
+  </footer>
+</div>
+
+<!-- Shared floating tooltip element -->
+<div class="tooltip" id="tooltip" role="tooltip"></div>
+
+<script>
+"use strict";
+
+/* ============================================================================
+   PROMPT DATA
+   ----------------------------------------------------------------------------
+   All prompt content lives in this one array so it is easy to maintain.
+
+   To ADD a prompt: copy a block and edit the fields.
+   To REMOVE one:   delete its block.
+   To EDIT one:     change the text / tips inline.
+
+   Each prompt object:
+     id          unique slug (used for element ids)
+     title       short headline
+     category    one bucket; categories build the sidebar in first-seen order
+     tags        small chips shown on the card (also searchable + clickable)
+     description one-line summary
+     segments[]  the prompt itself, split into meaningful pieces:
+                   text         the visible prompt text (this is what gets copied)
+                   tip          tooltip: what it does / why it helps / when to drop it
+                   block        true => start a NEW paragraph (joined with a blank line)
+                                omit  => continue the previous paragraph (joined with a space)
+                   placeholder  true => styled as a "replace me" context slot
+
+   The clean, copyable prompt text is rebuilt from `segments` (see buildPromptText).
+   Tooltips live in a separate floating element, so they are never copied.
+   ========================================================================== */
+const PROMPTS = [
+  /* 1 ---------------------------------------------------------------------- */
+  {
+    id: "interview-to-prompt",
+    title: "Interview Me, Then Build the Prompt",
+    category: "Prompt Engineering",
+    tags: ["Chatbot", "Claude", "Planning", "Prompt"],
+    description: "Turns a rough idea into a polished, copy-paste-ready prompt by interviewing you one question at a time.",
+    segments: [
+      { text: "You are a senior prompt engineer helping me turn a rough idea into a precise, reusable prompt for an AI assistant.",
+        tip: "Sets the role and the deliverable up front. Naming the expertise and a concrete output focuses the model on prompt-craft instead of just answering the underlying task. Keep it; swap the specialty if you want a different angle." },
+      { text: "Interview me one question at a time, waiting for my answer before asking the next.", block: true,
+        tip: "Forces a paced interview instead of a wall of questions you'll skim. One at a time keeps each answer focused and lets later questions adapt to earlier ones. Remove only if you'd rather get every question at once." },
+      { text: "For each question, suggest a sensible default answer and briefly explain why, so I can just confirm when I'm unsure.",
+        tip: "Recommendations turn a blank quiz into guided decisions and teach you the tradeoffs. Especially useful when you don't yet know what 'good' looks like. Drop it if you want the model to stay strictly neutral." },
+      { text: "If any of my answers contradict each other or an earlier decision, stop and point out the conflict before moving on.", block: true,
+        tip: "Catches contradictions before they get baked into the final prompt, keeping the spec internally consistent. Worth keeping in almost any interview-style prompt." },
+      { text: "If I suggest something that will likely produce a weak prompt, say so directly and propose a stronger alternative.",
+        tip: "Invites honest pushback instead of agreeable drift — you get better results when the model is allowed to disagree. Soften the wording if you want gentler feedback." },
+      { text: "Keep interviewing until you have enough to cover the goal, audience, tone, constraints, required inputs, and the exact output format.", block: true,
+        tip: "Defines 'done' for the interview so it doesn't stop too early or ramble. Edit this checklist to match what your prompt actually needs." },
+      { text: "When you have enough, stop interviewing and produce the final prompt as a single clean block of plain text I can copy, followed by a short note on how to use it.", block: true,
+        tip: "Specifies the deliverable and its shape — one copyable block plus usage notes — so the prompt isn't buried in commentary. Change it to a placeholder template if you prefer." },
+      { text: "Here is the rough idea I want to turn into a prompt:", block: true,
+        tip: "A single context slot at the end keeps the template clean and reusable. Paste your half-formed idea here; the interview fills in the rest. This is the part you edit every time." },
+      { text: "[Describe what you want the prompt to do, who will use it, and anything it must include or avoid.]", block: true, placeholder: true,
+        tip: "Bracketed guidance shows exactly what to put here without cluttering the prompt. Replace the whole line with your own context and delete the brackets." }
+    ]
+  },
+
+  /* 2 ---------------------------------------------------------------------- */
+  {
+    id: "one-shot-build",
+    title: "One-Shot Build for a Coding Agent",
+    category: "Coding Agents",
+    tags: ["Claude Code", "Codex", "Planning"],
+    description: "Asks Claude Code or Codex to build a small, self-contained project end-to-end in a single session and verify it works.",
+    segments: [
+      { text: "You are an autonomous coding agent. Build the project described below to completion in this single session, then verify it works before you finish.",
+        tip: "Frames the job as a complete, verified build — not a draft. Setting the 'one session, run to completion' expectation reduces premature stopping. Keep for one-shot tasks; drop it for open-ended exploration." },
+      { text: "Before writing code, restate the goal in your own words and list the key files you plan to create or change.", block: true,
+        tip: "A quick restate-and-plan step surfaces misunderstandings before any code exists, and gives you a checkpoint to interrupt. Remove if you want it to start immediately." },
+      { text: "Ask clarifying questions only if a decision would be expensive to reverse; otherwise pick sensible defaults and note the assumptions you made.", block: true,
+        tip: "Balances autonomy against endless questioning — it keeps moving while still flagging risky, hard-to-undo choices. Tighten or loosen the threshold to taste." },
+      { text: "Keep the project small and self-contained, and prefer the simplest approach that fully satisfies the requirements.", block: true,
+        tip: "Guards against over-engineering and scope creep, which also makes the result easier to verify in one pass. Edit if your project genuinely needs a heavier stack." },
+      { text: "When the build is done, run it, exercise the main paths, and report what you tested and the actual results.", block: true,
+        tip: "Demands real verification with observed output, not 'this should work.' Seeing what actually ran is how you trust a one-shot result — the most important line for unattended builds." },
+      { text: "If something fails, fix it and re-test rather than handing back broken code; only stop when it runs cleanly or you are genuinely blocked.",
+        tip: "Sets a clear finish line and stops the agent quitting at the first error. 'Genuinely blocked' still gives it permission to stop when truly stuck. Adjust if you want to be consulted sooner." },
+      { text: "Here is the project I want you to build:", block: true,
+        tip: "Single context slot for your spec. Describe the project here; everything above tells the agent how to approach it. This is the part you replace each time." },
+      { text: "[Describe the project, the tech stack or constraints, and what 'done' looks like.]", block: true, placeholder: true,
+        tip: "Spell out the stack and a concrete definition of done so verification has a target. Replace this line and remove the brackets." }
+    ]
+  },
+
+  /* 3 ---------------------------------------------------------------------- */
+  {
+    id: "repo-kickoff",
+    title: "Kick Off Work in an Existing Repo",
+    category: "Coding Agents",
+    tags: ["Claude Code", "Codex", "Planning"],
+    description: "Has a coding agent inspect an unfamiliar repository, map its state and constraints, then propose a focused next step before touching code.",
+    segments: [
+      { text: "You are joining an existing codebase. Before changing anything, inspect the repository and build an accurate picture of its current state.",
+        tip: "Establishes a look-before-you-leap posture in unfamiliar code, so changes don't fight existing patterns. Keep this for any onboarding-to-a-repo task." },
+      { text: "Identify the project's purpose, main entry points, build and test commands, and the conventions it already follows.", block: true,
+        tip: "Points the inspection at what matters for safe changes. Knowing the build/test commands and conventions is what lets later work fit in. Trim items you don't care about." },
+      { text: "Note any constraints or risks you find, such as missing tests, fragile areas, or dependencies that limit what can change.",
+        tip: "Surfaces landmines before you step on them; calling out fragile areas shapes a safer plan. Remove if the codebase is small and well understood." },
+      { text: "Summarize what you found in a short, skimmable overview rather than dumping file contents.", block: true,
+        tip: "Keeps the report useful instead of overwhelming — a concise map is more actionable than a flood of raw code. Ask for more depth on specific areas if you need it." },
+      { text: "Then propose a single focused next step that moves the project forward, and explain why it's the right one to do first.", block: true,
+        tip: "Converts understanding into one concrete, justified action instead of a vague backlog. Limiting it to one step keeps momentum and reviewability. Ask for a few options if you'd rather choose." },
+      { text: "Wait for my go-ahead before implementing, unless I've already told you to proceed.",
+        tip: "Inserts a review gate between planning and doing, so you can redirect before any code changes. Delete this line if you want the agent to implement straight away." },
+      { text: "Here is the repository and what I'm trying to accomplish:", block: true,
+        tip: "Context slot for pointing at the repo and your overall aim. The agent inspects what's there; you supply the direction. Replace this each time." },
+      { text: "[Point to the repo or paste relevant paths, and describe your goal or the area you want to work in.]", block: true, placeholder: true,
+        tip: "Give the agent a goal so its 'next step' aims somewhere useful. Replace with your specifics and drop the brackets." }
+    ]
+  },
+
+  /* 4 ---------------------------------------------------------------------- */
+  {
+    id: "session-handoff",
+    title: "End-of-Session Handoff Note",
+    category: "Coding Agents",
+    tags: ["Claude Code", "Codex", "Multi-Session"],
+    description: "Captures the state of a Claude Code or Codex session — what's done, what's open, decisions made — and writes a resume prompt for next time.",
+    segments: [
+      { text: "We're wrapping up this working session. Produce a concise handoff so the next session can resume without re-discovering everything.",
+        tip: "Names the task as a handoff, not more implementation. Framing it as 'for the next session' gets you a forward-looking summary instead of a victory lap. Keep this opener." },
+      { text: "Do not write or change any code right now; only summarize and prepare the handoff.", block: true,
+        tip: "Explicitly freezes implementation so the agent doesn't sneak in last-minute edits. A clean snapshot beats half-finished changes at session end. Remove only if you do want one final tweak." },
+      { text: "Capture the current state: what was accomplished, what is partially done, and what is verified versus only assumed to work.", block: true,
+        tip: "Separates real progress from hopeful progress. Knowing what's merely assumed-working tells the next session where to look first — the core of a trustworthy handoff." },
+      { text: "List the open problems and unresolved questions, with enough detail that they make sense out of context.", block: true,
+        tip: "Open issues are useless as cryptic one-liners; writing them to stand alone saves the next session from archaeology. Tailor the detail level to the project." },
+      { text: "Record the key decisions made and the reasoning behind them, so they aren't second-guessed or silently reversed later.", block: true,
+        tip: "Decisions without rationale get undone by the next session. Capturing the 'why' preserves intent across the context gap — especially valuable on longer projects." },
+      { text: "Finally, write a copy-paste-ready prompt I can give at the start of the next session that contains everything needed to continue.", block: true,
+        tip: "Turns the handoff into an actionable kickoff for next time. A ready-made resume prompt is the whole point of the exercise. Adjust what it should emphasize." },
+      { text: "Here is any extra context you should weigh in the handoff:", block: true,
+        tip: "Slot for things the agent can't infer — priorities, deadlines, anything to flag. Often you can keep this short since the agent has the session history. Replace as needed." },
+      { text: "[Add priorities, deadlines, or specific things you want carried forward — or leave blank.]", block: true, placeholder: true,
+        tip: "Use this to bias the handoff toward what matters to you. Replace or delete the line if the session history already covers it." }
+    ]
+  },
+
+  /* 5 ---------------------------------------------------------------------- */
+  {
+    id: "feature-planning",
+    title: "Plan a Feature Before You Build It",
+    category: "Planning",
+    tags: ["Claude", "Planning", "Chatbot"],
+    description: "Works with an AI assistant to define a feature — scope, behavior, edge cases, and a clear spec — before handing it to a coding agent.",
+    segments: [
+      { text: "Help me define a new feature clearly enough that a coding agent could implement it without guessing.",
+        tip: "Sets the bar: the output must be implementation-ready, not a vague wish. Targeting a coding-agent audience forces useful precision. Keep this as the framing line." },
+      { text: "Start by asking me focused questions about the goal, the users, and how the feature should behave — one topic at a time.", block: true,
+        tip: "Drives structured discovery instead of a single guess. One topic at a time keeps answers coherent and builds on each other. Remove if you already have a tight description." },
+      { text: "For each question, offer a recommended answer and your reasoning, so I can confirm or redirect quickly.",
+        tip: "Recommendations make planning faster and teach you the tradeoffs — a safety net when you're unsure what to pick. Drop it if you want the assistant to stay neutral." },
+      { text: "Probe the edge cases, failure modes, and interactions with existing behavior that I'm likely to overlook.", block: true,
+        tip: "Pushes the conversation into the corners where features usually break. Surfacing edge cases now is far cheaper than during implementation — where most of the value is." },
+      { text: "If my requirements conflict or a choice seems unwise, raise it and suggest a better path.", block: true,
+        tip: "Licenses the assistant to challenge contradictions and weak choices. Honest pushback during planning prevents expensive rework. Soften the tone if you prefer." },
+      { text: "When the picture is complete, write a concise feature spec covering scope, behavior, edge cases, and what is explicitly out of scope.", block: true,
+        tip: "Defines the deliverable, including the often-missing 'out of scope' section that prevents creep. A crisp spec is what you hand to the coding agent. Edit the sections to fit your process." },
+      { text: "Here is the feature I want to plan:", block: true,
+        tip: "Single context slot for your idea. Describe the feature here; the questions above refine it into a spec. Replace each time." },
+      { text: "[Describe the feature, who it's for, and any constraints or must-haves.]", block: true, placeholder: true,
+        tip: "Include constraints and must-haves so the spec respects them. Replace this line and remove the brackets." }
+    ]
+  },
+
+  /* 6 ---------------------------------------------------------------------- */
+  {
+    id: "feature-implementation",
+    title: "Implement a Feature Without Breaking Things",
+    category: "Coding Agents",
+    tags: ["Claude Code", "Codex", "Code Review"],
+    description: "Directs Claude Code or Codex to add a feature to an existing codebase while preserving current behavior and matching local conventions.",
+    segments: [
+      { text: "Implement the feature described below in this existing codebase while preserving all current behavior.",
+        tip: "States the prime directive: add capability without regressions. 'Preserve current behavior' is the line that protects existing users. Keep it front and center." },
+      { text: "First, study how the surrounding code is organized and follow its existing patterns, naming, and structure.", block: true,
+        tip: "Makes the new code look native instead of bolted on, keeping the codebase coherent and reviewable. Remove only if you explicitly want a new pattern introduced." },
+      { text: "Make the smallest change that fully delivers the feature, and avoid unrelated refactors or drive-by edits.", block: true,
+        tip: "Keeps the diff tight and reviewable. Unrelated refactors hide the real change and widen the blast radius. Loosen this if you've also asked for cleanup." },
+      { text: "If you spot a pre-existing bug or a tempting refactor, mention it but don't act on it without asking.",
+        tip: "Captures opportunistic findings without letting scope balloon, so you stay in control of what actually changes. Keep it to prevent surprise rewrites." },
+      { text: "Add or update tests to cover the new behavior, and run the existing tests to confirm nothing regressed.", block: true,
+        tip: "Ties the feature to verification on both sides — new coverage and untouched old behavior. Running the suite is how 'preserve behavior' gets proven. Adjust to your test setup." },
+      { text: "Then summarize what you changed, why, and anything I should double-check.", block: true,
+        tip: "Gives you a review-ready summary instead of a silent diff; calling out things to double-check focuses your attention. Keep for any non-trivial change." },
+      { text: "Here is the feature I want implemented:", block: true,
+        tip: "Context slot for the feature request. Describe it here; the rules above govern how it lands in your code. Replace each time." },
+      { text: "[Describe the feature and point to the relevant files or area of the codebase.]", block: true, placeholder: true,
+        tip: "Pointing at the relevant area saves the agent from hunting and reduces mistakes. Replace and remove the brackets." }
+    ]
+  },
+
+  /* 7 ---------------------------------------------------------------------- */
+  {
+    id: "multi-session-plan",
+    title: "Plan a Multi-Session Project in Versions",
+    category: "Planning",
+    tags: ["Planning", "Multi-Session", "Claude Code"],
+    description: "Breaks a project too big for one session into staged versions (v0.1.0 to v1.0.0) with goals per version and resume prompts to preserve context.",
+    segments: [
+      { text: "Help me plan a project that's too large to finish in one session by breaking it into a sequence of small, shippable versions.",
+        tip: "Sets the strategy — incremental versions over one heroic build. Small shippable steps are what make a big project tractable across sessions. Keep this framing." },
+      { text: "Propose a version roadmap from v0.1.0 through v1.0.0, where each version is independently useful and builds on the last.", block: true,
+        tip: "Gives the project a spine of concrete milestones. Requiring each version to stand on its own prevents a pile of half-features. Renumber or rename to fit your scheme." },
+      { text: "For each version, define a clear goal, what's included, what's deliberately deferred, and how you'll know it's done.", block: true,
+        tip: "Turns each milestone into a self-contained mini-spec with a finish line. The 'deferred' list is what keeps early versions small. Trim fields you don't need." },
+      { text: "Call out dependencies and risks between versions so the sequencing makes sense.",
+        tip: "Exposes ordering constraints before they cause rework; knowing what blocks what keeps the roadmap realistic. Remove for simple, linear projects." },
+      { text: "Recommend what context to record between sessions — decisions, state, and open threads — so later sessions don't lose the plot.", block: true,
+        tip: "Builds continuity into the plan, since each session starts fresh. Deciding what to persist now prevents context loss later. Pair it with a notes or docs file in your repo." },
+      { text: "For each version, produce a copy-paste-ready prompt I can hand to a coding agent to build that version on its own.", block: true,
+        tip: "Converts the roadmap into ready-to-run session kickoffs. Per-version prompts are what make the plan executable without re-planning. Adjust what each kickoff should include." },
+      { text: "Ask me anything you need about scope, priorities, or constraints before drafting the roadmap, and recommend defaults where you can.", block: true,
+        tip: "Gathers the few facts that shape the whole plan, with defaults so it stays quick. Better inputs here ripple through every version. Remove if your scope is already firm." },
+      { text: "Here is the project I want to plan across multiple sessions:", block: true,
+        tip: "Context slot for the overall vision. Describe the end goal; the roadmap above sequences how to get there. Replace each time." },
+      { text: "[Describe the full project, your priorities, and any hard constraints or deadlines.]", block: true, placeholder: true,
+        tip: "Priorities and deadlines drive how the versions are sliced. Replace this line and drop the brackets." }
+    ]
+  },
+
+  /* 8 ---------------------------------------------------------------------- */
+  {
+    id: "debugging",
+    title: "Debug It Systematically",
+    category: "Debugging & Review",
+    tags: ["Debugging", "Claude Code", "Codex"],
+    description: "Walks an AI through a disciplined debugging loop: reproduce, hypothesize, test the smallest fix, and verify — instead of guessing.",
+    segments: [
+      { text: "Help me find and fix this bug methodically rather than guessing at fixes.",
+        tip: "Sets a disciplined tone and rules out shotgun debugging. Method beats luck, especially on bugs that resist the obvious fix. Keep this opener." },
+      { text: "First, reproduce the problem reliably and state the exact steps and conditions that trigger it.", block: true,
+        tip: "A reliable repro is the foundation of every real fix — without it you can't tell whether anything actually changed. Never skip this for a non-trivial bug." },
+      { text: "Form a few specific hypotheses about the root cause and rank them by likelihood.", block: true,
+        tip: "Forces explicit theories instead of poking around, and ranking them focuses effort on the most probable cause first. Keep it to make the reasoning visible." },
+      { text: "Test the most likely hypothesis with the smallest possible change or check before moving on.",
+        tip: "Small, targeted probes isolate the cause without muddying the waters; one change at a time keeps cause and effect clear. Edit if you want investigation before any edits." },
+      { text: "When you find the root cause, explain it, then make the minimal fix that addresses the cause rather than the symptom.", block: true,
+        tip: "Distinguishes curing the disease from masking it. A minimal, root-cause fix is less likely to introduce new bugs — the heart of good debugging." },
+      { text: "Verify the fix resolves the original repro and doesn't break related behavior, and tell me exactly what you tested.", block: true,
+        tip: "Closes the loop by proving the bug is gone and nothing nearby broke. Reported test steps let you trust the result. Mention your test commands to make it concrete." },
+      { text: "Here is the bug:", block: true,
+        tip: "Context slot for the symptoms. Describe what's wrong here; the method above turns it into a fix. Replace each time." },
+      { text: "[Describe the symptoms, what you expected, what actually happens, and any errors or logs.]", block: true, placeholder: true,
+        tip: "Expected-vs-actual plus error text is what makes a bug diagnosable. Paste logs here and remove the brackets." }
+    ]
+  },
+
+  /* 9 ---------------------------------------------------------------------- */
+  {
+    id: "code-review",
+    title: "Review This Code Critically",
+    category: "Debugging & Review",
+    tags: ["Code Review", "Claude", "Codex"],
+    description: "Asks for a thorough review covering correctness, maintainability, security, edge cases, and tests — ordered by severity.",
+    segments: [
+      { text: "Review the code below as a careful, experienced engineer who wants it to succeed.",
+        tip: "Sets a constructive-but-rigorous tone. Framing the reviewer as on your side yields honest critique without nitpicking for its own sake. Swap in your domain if it helps." },
+      { text: "Check correctness first: logic errors, broken assumptions, and cases the code handles incorrectly.", block: true,
+        tip: "Puts correctness ahead of style, where it belongs — a clean-looking function that returns the wrong answer is still broken. Keep this as the top priority." },
+      { text: "Then assess maintainability: clarity, naming, structure, and anything that will confuse the next reader.", block: true,
+        tip: "Targets the long-term cost of the code, not just whether it runs today. The 'next reader' framing catches hidden complexity. Trim if you only want correctness." },
+      { text: "Flag security and safety issues, including unvalidated input, unsafe defaults, and mishandled errors or secrets.", block: true,
+        tip: "Directs attention to the failure modes that cause real damage; naming specific classes makes the review concrete. Remove for throwaway code where it doesn't apply." },
+      { text: "Point out missing edge cases and untested paths, and suggest the tests that would catch them.", block: true,
+        tip: "Connects gaps in logic to gaps in testing, and suggesting tests turns findings into a concrete to-do list. Keep it to harden the code." },
+      { text: "Order your findings by severity, and for each one explain the impact and a concrete fix.", block: true,
+        tip: "Severity-ordering tells you what to fix first instead of drowning you in equal-weight notes; impact-plus-fix makes each item actionable. Adjust the format to taste." },
+      { text: "Be honest about real problems, but don't invent issues just to have something to say.",
+        tip: "Counters the tendency to pad reviews with filler. Permission to say 'this looks fine' keeps the signal high. Keep it to avoid noise." },
+      { text: "Here is the code to review:", block: true,
+        tip: "Context slot for the code. Paste it here; everything above defines what a good review looks like. Replace each time." },
+      { text: "[Paste the code, and note its purpose plus anything you're unsure about.]", block: true, placeholder: true,
+        tip: "Saying what the code is for and where you're worried focuses the review. Replace this line and drop the brackets." }
+    ]
+  },
+
+  /* 10 --------------------------------------------------------------------- */
+  {
+    id: "refactoring",
+    title: "Refactor Without Changing Behavior",
+    category: "Debugging & Review",
+    tags: ["Code Review", "Claude Code", "Refactoring"],
+    description: "Improves structure and readability while keeping behavior identical, in small verifiable steps.",
+    segments: [
+      { text: "Refactor the code below to improve its structure and readability while keeping its behavior exactly the same.",
+        tip: "States the contract of refactoring: better shape, identical behavior. The 'exactly the same' clause is what separates refactoring from rewriting. Keep it explicit." },
+      { text: "Before changing anything, describe what the code currently does so we agree on the behavior to preserve.", block: true,
+        tip: "Establishes a shared baseline to protect. If you can't state the behavior, you can't safely preserve it. Keep this for anything non-trivial." },
+      { text: "Make the improvements in small, self-contained steps rather than one sweeping rewrite.", block: true,
+        tip: "Small steps stay reviewable and easy to undo if one goes wrong; sweeping rewrites hide behavior changes. Loosen only for tiny snippets." },
+      { text: "Focus on clarity, reducing duplication, and simplifying control flow — not on adding features or changing the interface.",
+        tip: "Keeps the refactor in its lane and the public interface stable. Scope discipline is what makes a refactor safe to merge. Edit the focus list to match your goals." },
+      { text: "After each step, explain what changed and why it's equivalent to the original.", block: true,
+        tip: "Forces a justification of behavior-preservation at every step; the equivalence argument is your safety check. Keep it to stay honest about 'no behavior change.'" },
+      { text: "Recommend tests or checks that would confirm behavior is unchanged, and flag anywhere you're unsure equivalence holds.", block: true,
+        tip: "Adds a verification plan and surfaces risky spots. Admitting uncertainty is more useful than false confidence. Run the checks before trusting the result." },
+      { text: "Here is the code I want refactored:", block: true,
+        tip: "Context slot for the code. Paste it here; the rules above keep the refactor safe. Replace each time." },
+      { text: "[Paste the code, and mention any constraints like public APIs that must not change.]", block: true, placeholder: true,
+        tip: "Flagging fixed APIs prevents the refactor from breaking callers. Replace this line and remove the brackets." }
+    ]
+  },
+
+  /* 11 --------------------------------------------------------------------- */
+  {
+    id: "research-paper",
+    title: "Research and Draft a White Paper",
+    category: "Writing & Research",
+    tags: ["Research", "Writing", "Chatbot"],
+    description: "Guides an AI chatbot to research a topic, outline, draft, and then critique its own work for weak claims and missing citations.",
+    segments: [
+      { text: "Help me research and draft a clear, well-structured piece on the topic below, written for a knowledgeable but non-expert reader.",
+        tip: "Sets the deliverable and the audience, which together drive depth and tone. Naming the reader prevents prose that's too shallow or too jargon-heavy. Adjust the audience to your real one." },
+      { text: "Start with a brief outline of the main sections and the argument each one makes, and let me adjust it before you draft.", block: true,
+        tip: "An outline checkpoint is cheap to change; a full draft isn't. Approving the structure first saves a rewrite. Remove if you want a draft immediately." },
+      { text: "As you draft, distinguish well-established facts from interpretation or speculation, and don't state opinions as settled truth.", block: true,
+        tip: "Keeps the piece intellectually honest by separating fact from take — where AI writing most often overreaches. Keep this for anything researched." },
+      { text: "Mark every claim that would need a citation, and note where you're unsure of the facts rather than filling gaps with confident guesses.", block: true,
+        tip: "Makes the draft verifiable and flags its own weak spots. Honest uncertainty beats fluent fabrication — essential whenever accuracy matters." },
+      { text: "After the draft, critique it yourself: identify the weakest arguments, missing perspectives, and gaps a careful reader would challenge.", block: true,
+        tip: "Builds in a self-review pass so you get a stronger second version. The model is often a good critic of its own first draft. Keep it to raise the quality bar." },
+      { text: "Then give me a short list of what to verify or strengthen before this could be published or shared.", block: true,
+        tip: "Hands you a concrete revision checklist instead of a 'looks done' signal, making the path from draft to finished explicit. Adjust to your publishing standards." },
+      { text: "Here is the topic and what I want from the piece:", block: true,
+        tip: "Context slot for the subject and goals. Describe the topic and angle; the steps above shape it into a draft. Replace each time." },
+      { text: "[Describe the topic, the angle or thesis, the audience, and the rough length.]", block: true, placeholder: true,
+        tip: "Angle, audience, and length steer the whole draft. Replace this line and remove the brackets." }
+    ]
+  },
+
+  /* 12 --------------------------------------------------------------------- */
+  {
+    id: "improve-prompt",
+    title: "Critique and Improve My Prompt",
+    category: "Prompt Engineering",
+    tags: ["Prompt", "Claude", "Chatbot"],
+    description: "A meta-prompt that diagnoses the weaknesses in a prompt, explains the fixes, and returns a cleaner, stronger version.",
+    segments: [
+      { text: "You are a prompt engineer. Diagnose the prompt below and rewrite it to be clearer, more specific, and more reliable.",
+        tip: "Defines the job — critique plus rewrite, not just praise. A specialist framing yields sharper feedback. Keep this opener." },
+      { text: "First, tell me what the prompt is trying to achieve, so we're sure you understood it before changing it.", block: true,
+        tip: "A restate-the-goal step catches misreadings before the rewrite drifts — a cheap alignment check. Keep for anything ambiguous." },
+      { text: "Identify its specific weaknesses: vagueness, missing context, conflicting instructions, or anything that invites an unhelpful answer.", block: true,
+        tip: "Pushes for concrete diagnoses instead of generic 'be clearer' advice. Naming exact flaws is what makes the rewrite better — the analytical core." },
+      { text: "Point out anything ambiguous or contradictory, and if the prompt is aiming at the wrong goal, say so.",
+        tip: "Licenses the model to challenge the prompt's premise, not just polish its wording. Sometimes the real fix is a different goal. Keep it for honest critique." },
+      { text: "Explain the key changes you'd make and why each one improves the result.", block: true,
+        tip: "The rationale teaches you to write better prompts yourself and lets you reject changes you disagree with. Drop only if you just want the result." },
+      { text: "Then give me the improved prompt as a single clean block of plain text I can copy and paste.", block: true,
+        tip: "Specifies a copy-ready deliverable so the rewrite isn't buried in commentary. One clean block is what you actually reuse. Keep this format line." },
+      { text: "Here is the prompt I want you to improve:", block: true,
+        tip: "Context slot for the prompt under review. Paste it here; the steps above turn it into a stronger version. Replace each time." },
+      { text: "[Paste your prompt, and mention what it's for and where it's falling short.]", block: true, placeholder: true,
+        tip: "Saying how it currently falls short focuses the critique on what matters to you. Replace this line and drop the brackets." }
+    ]
+  }
+];
+/* ============================================================================
+   SMALL DOM HELPERS
+   ========================================================================== */
+function el(tag, className) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  return node;
+}
+function button(label, className) {
+  const b = el("button", className);
+  b.type = "button";
+  b.textContent = label;
+  return b;
+}
+
+/* Rebuild the clean, copyable prompt text from a prompt's segments.
+   Segments join with a single space, or a blank line when `block` is set.
+   This is the ONLY source for copied text, so it can never include markup,
+   tooltips, icons, or UI labels. */
+function buildPromptText(prompt) {
+  let out = "";
+  prompt.segments.forEach((seg, i) => {
+    if (i === 0) out += seg.text;
+    else if (seg.block) out += "\n\n" + seg.text;
+    else out += " " + seg.text;
+  });
+  return out;
+}
+
+/* ============================================================================
+   TOOLTIP (shared floating element)
+   Shows on hover, keyboard focus, and tap. Positioned to stay on-screen.
+   pointer-events:none in CSS means it never blocks copying or clicks.
+   ========================================================================== */
+const tipEl = document.getElementById("tooltip");
+let activeSeg = null;
+
+function showTip(seg) {
+  activeSeg = seg;
+  tipEl.textContent = seg.dataset.tip;
+  tipEl.classList.add("show");
+  seg.setAttribute("aria-describedby", "tooltip");
+  positionTip(seg);
+}
+function hideTip() {
+  if (activeSeg) activeSeg.removeAttribute("aria-describedby");
+  activeSeg = null;
+  tipEl.classList.remove("show");
+}
+/* A segment is "open" while it is hovered OR focused; closed when neither. */
+function updateTip(seg) {
+  if (seg._hover || seg._focus) showTip(seg);
+  else if (activeSeg === seg) hideTip();
+}
+function positionTip(seg) {
+  const pad = 8;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const r = seg.getBoundingClientRect();
+  tipEl.style.maxWidth = Math.min(340, vw - pad * 2) + "px";
+  // Measure after content/width are set.
+  const tr = tipEl.getBoundingClientRect();
+  // Prefer above the segment; flip below if there isn't room.
+  let top = r.top - tr.height - pad;
+  if (top < pad) {
+    top = r.bottom + pad;
+    if (top + tr.height > vh - pad) top = Math.max(pad, vh - tr.height - pad);
+  }
+  // Center horizontally on the segment, clamped to the viewport.
+  let left = r.left + r.width / 2 - tr.width / 2;
+  left = Math.max(pad, Math.min(left, vw - tr.width - pad));
+  tipEl.style.left = Math.round(left) + "px";
+  tipEl.style.top = Math.round(top) + "px";
+}
+
+/* Event delegation: mouseover/out and focusin/out bubble, so one set of
+   listeners covers every segment, including ones added later. */
+document.addEventListener("mouseover", e => {
+  const seg = e.target.closest(".seg");
+  if (seg && seg.dataset.tip) { seg._hover = true; updateTip(seg); }
+});
+document.addEventListener("mouseout", e => {
+  const seg = e.target.closest(".seg");
+  if (seg && seg.dataset.tip) { seg._hover = false; updateTip(seg); }
+});
+document.addEventListener("focusin", e => {
+  const seg = e.target.closest(".seg");
+  if (seg && seg.dataset.tip) { seg._focus = true; updateTip(seg); }
+});
+document.addEventListener("focusout", e => {
+  const seg = e.target.closest(".seg");
+  if (seg && seg.dataset.tip) { seg._focus = false; updateTip(seg); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && activeSeg) {
+    const s = activeSeg;
+    hideTip();
+    if (s && typeof s.blur === "function") s.blur();
+  }
+});
+// Keep an open tooltip attached to its segment while the page scrolls/resizes.
+window.addEventListener("scroll", () => { if (activeSeg) positionTip(activeSeg); }, true);
+window.addEventListener("resize", () => { if (activeSeg) positionTip(activeSeg); });
+
+/* ============================================================================
+   COPYING (clipboard with graceful fallbacks)
+   ========================================================================== */
+function flashButton(btn, msg, ok) {
+  if (btn._t) clearTimeout(btn._t);
+  btn.textContent = msg;
+  btn.classList.toggle("copied", !!ok);
+  btn.classList.toggle("copy-error", !ok);
+  btn._t = setTimeout(() => {
+    btn.textContent = btn.dataset.label;
+    btn.classList.remove("copied", "copy-error");
+  }, 1800);
+}
+/* Legacy fallback for browsers/contexts without async clipboard access. */
+function legacyCopy(text) {
+  try {
+    const ta = el("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "-1000px";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+}
+/* Final fallback: select the text on-screen so the user can copy manually. */
+function selectElementText(node) {
+  try {
+    if (node.tagName === "TEXTAREA" || node.tagName === "INPUT") {
+      node.focus(); node.select(); return;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch (e) { /* nothing more we can do */ }
+}
+async function copyText(text, btn, fallbackNode) {
+  let ok = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    }
+  } catch (e) { ok = false; }
+  if (!ok) ok = legacyCopy(text);
+  if (ok) {
+    flashButton(btn, "Copied ✓", true);
+  } else {
+    flashButton(btn, "Press Ctrl/Cmd+C", false);
+    if (fallbackNode) selectElementText(fallbackNode);
+  }
+}
+
+/* ============================================================================
+   CARD RENDERING (built once, then shown/hidden by the filter)
+   ========================================================================== */
+function renderBody(prompt) {
+  const body = el("div", "prompt-body");
+  prompt.segments.forEach((seg, i) => {
+    // Insert the same separators buildPromptText uses, as real text nodes.
+    // With white-space:pre-wrap these render as spaces / blank lines, so the
+    // on-screen text matches the copied text exactly.
+    if (i > 0) body.appendChild(document.createTextNode(seg.block ? "\n\n" : " "));
+    const span = el("span", "seg" + (seg.placeholder ? " placeholder" : ""));
+    span.textContent = seg.text;
+    span.dataset.tip = seg.tip;
+    span.tabIndex = 0;
+    body.appendChild(span);
+  });
+  return body;
+}
+
+function buildCard(prompt) {
+  const card = el("article", "card");
+  card.id = "card-" + prompt.id;
+
+  const title = el("h2", "card-title");
+  title.id = "title-" + prompt.id;
+  title.textContent = prompt.title;
+  card.setAttribute("aria-labelledby", title.id);
+
+  const desc = el("p", "card-desc");
+  desc.textContent = prompt.description;
+
+  const meta = el("div", "card-meta");
+  const catChip = el("span", "chip cat-chip");
+  catChip.textContent = prompt.category;
+  meta.appendChild(catChip);
+  prompt.tags.forEach(tag => {
+    const t = button(tag, "chip tag");
+    t.setAttribute("aria-label", "Filter by tag " + tag);
+    t.addEventListener("click", () => filterByTag(tag));
+    meta.appendChild(t);
+  });
+
+  const body = renderBody(prompt);
+  const cleanText = buildPromptText(prompt);
+
+  // Actions: copy + toggle editor
+  const actions = el("div", "actions");
+  const copyBtn = button("Copy Prompt", "btn primary");
+  copyBtn.dataset.label = "Copy Prompt";
+  copyBtn.addEventListener("click", () => copyText(cleanText, copyBtn, body));
+
+  const editBtn = button("Edit before copying", "btn");
+  editBtn.setAttribute("aria-expanded", "false");
+  actions.append(copyBtn, editBtn);
+
+  // Editor (hidden until toggled)
+  const editor = el("div", "editor-wrap");
+  editor.hidden = true;
+  const ta = el("textarea", "editor");
+  ta.value = cleanText;
+  ta.setAttribute("aria-label", "Editable prompt for " + prompt.title);
+  ta.rows = Math.min(22, cleanText.split("\n").length + 2);
+  const hint = el("p", "editor-hint");
+  hint.textContent = "Edit freely, then copy. Your changes stay until you reload.";
+  const copyEditBtn = button("Copy Edited Prompt", "btn primary");
+  copyEditBtn.dataset.label = "Copy Edited Prompt";
+  copyEditBtn.addEventListener("click", () => copyText(ta.value, copyEditBtn, ta));
+  editor.append(ta, hint, copyEditBtn);
+
+  editBtn.addEventListener("click", () => {
+    const opening = editor.hidden;
+    editor.hidden = !opening;
+    editBtn.setAttribute("aria-expanded", String(opening));
+    editBtn.textContent = opening ? "Hide editor" : "Edit before copying";
+    editBtn.dataset.label = editBtn.textContent;
+    if (opening) ta.focus();
+  });
+
+  card.append(title, desc, meta, body, actions, editor);
+
+  // Precomputed lowercase haystack for search + the category for filtering.
+  card._search = [
+    prompt.title, prompt.description, prompt.category,
+    prompt.tags.join(" "), cleanText
+  ].join(" ").toLowerCase();
+  card._category = prompt.category;
+  return card;
+}
+
+/* ============================================================================
+   FILTER STATE + RENDERING
+   ========================================================================== */
+const gridEl = document.getElementById("grid");
+const emptyEl = document.getElementById("empty");
+const searchInput = document.getElementById("search");
+const catListEl = document.getElementById("catList");
+const countLabel = document.getElementById("countLabel");
+const clearBtn = document.getElementById("clearBtn");
+
+let cards = [];
+let catButtons = [];
+let activeCategory = "All";
+let query = "";
+
+function applyFilters() {
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matchesQuery = card => tokens.every(t => card._search.includes(t));
+
+  let visible = 0;
+  cards.forEach(card => {
+    const inCat = activeCategory === "All" || card._category === activeCategory;
+    const show = inCat && matchesQuery(card);
+    card.hidden = !show;
+    if (show) visible++;
+  });
+
+  // Category counts reflect the current search (ignoring the active category).
+  const matchingAll = cards.filter(matchesQuery);
+  catButtons.forEach(btn => {
+    const cat = btn.dataset.cat;
+    const n = cat === "All"
+      ? matchingAll.length
+      : matchingAll.filter(c => c._category === cat).length;
+    btn.querySelector(".count").textContent = n;
+  });
+
+  emptyEl.hidden = visible > 0;
+  countLabel.textContent =
+    visible + (visible === 1 ? " prompt" : " prompts") +
+    (activeCategory !== "All" ? " in " + activeCategory : "") +
+    (tokens.length ? ' matching "' + query.trim() + '"' : "");
+  clearBtn.hidden = activeCategory === "All" && tokens.length === 0;
+}
+
+function setActiveCategory(cat) {
+  activeCategory = cat;
+  catButtons.forEach(b => {
+    const on = b.dataset.cat === cat;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-current", on ? "true" : "false");
+  });
+  applyFilters();
+}
+
+/* Clicking a tag searches for it and resets the category so nothing is hidden. */
+function filterByTag(tag) {
+  query = tag;
+  searchInput.value = tag;
+  setActiveCategory("All");
+  document.getElementById("main").scrollIntoView({ block: "start" });
+}
+
+function buildSidebar() {
+  // Categories in first-seen order, with "All" pinned to the top.
+  const cats = ["All"];
+  PROMPTS.forEach(p => { if (!cats.includes(p.category)) cats.push(p.category); });
+
+  cats.forEach(cat => {
+    const li = el("li");
+    const btn = button("", "cat");
+    btn.dataset.cat = cat;
+    const label = document.createTextNode(cat === "All" ? "All prompts" : cat);
+    const count = el("span", "count");
+    count.textContent = cat === "All"
+      ? PROMPTS.length
+      : PROMPTS.filter(p => p.category === cat).length;
+    btn.append(label, count);
+    btn.addEventListener("click", () => setActiveCategory(cat));
+    li.appendChild(btn);
+    catListEl.appendChild(li);
+  });
+  catButtons = Array.from(catListEl.querySelectorAll(".cat"));
+}
+
+/* ============================================================================
+   THEME TOGGLE (persisted in localStorage)
+   ========================================================================== */
+const themeToggle = document.getElementById("themeToggle");
+const themeIco = document.getElementById("themeIco");
+const themeLabel = document.getElementById("themeLabel");
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const goingTo = theme === "dark" ? "light" : "dark";
+  // The button shows the action it performs (switch to the other theme).
+  themeIco.innerHTML = theme === "dark" ? "&#9728;" : "&#9790;"; // sun / moon
+  themeLabel.textContent = goingTo === "light" ? "Light mode" : "Dark mode";
+  themeToggle.setAttribute("aria-label", "Switch to " + goingTo + " mode");
+  themeToggle.setAttribute("aria-pressed", String(theme === "light"));
+}
+function currentTheme() {
+  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+}
+themeToggle.addEventListener("click", () => {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem("pg-theme", next); } catch (e) { /* ignore */ }
+});
+
+/* ============================================================================
+   SEARCH + CLEAR WIRING
+   ========================================================================== */
+searchInput.addEventListener("input", () => {
+  query = searchInput.value;
+  applyFilters();
+});
+clearBtn.addEventListener("click", () => {
+  query = "";
+  searchInput.value = "";
+  setActiveCategory("All");
+  searchInput.focus();
+});
+
+/* ============================================================================
+   INIT
+   ========================================================================== */
+function init() {
+  applyTheme(currentTheme());          // sync the toggle label with the saved theme
+  PROMPTS.forEach(p => {               // build every card once
+    const card = buildCard(p);
+    cards.push(card);
+    gridEl.appendChild(card);
+  });
+  buildSidebar();
+  setActiveCategory("All");            // initial render
+}
+init();
+</script>
+</body>
+</html>
